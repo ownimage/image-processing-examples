@@ -15,12 +15,12 @@ If you get an error with the model the link for it is below.
 ## Files
 
 |file|notes|
-|workflow_api_img2img.json|is the file that was downloaded from the refenerces below|
+|workflow_api_img2img.json|is the file that was downloaded from the references below|
 |image_refiner.json|is the workflow file that I have created.
 
 ## Other sources
 
-This will use one of my notes to enable re-reading of a file.
+This will use one of my notes to enable re-reading of a file, which can be found at https://github.com/ownimage/ComfyUI-ownimage.
 
 ## References
 https://github.com/SharCodin/SDXL-Turbo-ComfyUI-Workflows
