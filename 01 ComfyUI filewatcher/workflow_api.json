@@ -1,0 +1,156 @@
+{
+  "48": {
+    "inputs": {
+      "seed": 549347481638200,
+      "steps": 20,
+      "cfg": 8,
+      "sampler_name": "dpmpp_2m_sde",
+      "scheduler": "normal",
+      "denoise": 0.525,
+      "model": [
+        "49",
+        0
+      ],
+      "positive": [
+        "59",
+        0
+      ],
+      "negative": [
+        "51",
+        0
+      ],
+      "latent_image": [
+        "60",
+        0
+      ]
+    },
+    "class_type": "KSampler"
+  },
+  "49": {
+    "inputs": {
+      "ckpt_name": "arteyou_alpha1.safetensors"
+    },
+    "class_type": "CheckpointLoaderSimple"
+  },
+  "50": {
+    "inputs": {
+      "text": "beautiful\nbackground,noise,dithering,gradient,detailed,out of frame,ugly,error,Illustration, watermark,(((clean ink illustration))),Studio cute, tiny, little chibi, kawai, furry, great face expression, dynamic pose, trending on artstation, cinematic, hyper realism, high detail, 8k, 8mm, octane render, bokeh, artstation, detailed, character design by mark ryden and pixar",
+      "clip": [
+        "49",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode"
+  },
+  "51": {
+    "inputs": {
+      "text": "deformed, marks on face\ncanvas frame, (high contrast:1.2), (over saturated:1.2), (glossy:1.1), cartoon, 3d, ((disfigured)), ((bad art)), ((b&w)), blurry, ((bad anatomy)), (((bad proportions))), ((extra limbs)), cloned face, (((disfigured))), extra limbs, (bad anatomy), gross proportions, (malformed limbs), ((missing arms)), ((missing legs)), (((extra arms))), (((extra legs))), mutated hands, (fused fingers), (too many fingers), (((long neck))), Photoshop, video game, ugly, tiling, poorly drawn hands, 3d render\n",
+      "clip": [
+        "49",
+        1
+      ]
+    },
+    "class_type": "CLIPTextEncode"
+  },
+  "52": {
+    "inputs": {
+      "samples": [
+        "48",
+        0
+      ],
+      "vae": [
+        "49",
+        2
+      ]
+    },
+    "class_type": "VAEDecode"
+  },
+  "53": {
+    "inputs": {
+      "filename_prefix": "ComfyUI",
+      "images": [
+        "52",
+        0
+      ]
+    },
+    "class_type": "SaveImage"
+  },
+  "54": {
+    "inputs": {
+      "detect_hand": "enable",
+      "detect_body": "enable",
+      "detect_face": "enable",
+      "image": [
+        "71",
+        0
+      ]
+    },
+    "class_type": "OpenposePreprocessor"
+  },
+  "56": {
+    "inputs": {
+      "image": "Take-Good-Selfies-anna-shvets.webp",
+      "choose file to upload": "image"
+    },
+    "class_type": "LoadImage"
+  },
+  "57": {
+    "inputs": {
+      "images": [
+        "54",
+        0
+      ]
+    },
+    "class_type": "PreviewImage"
+  },
+  "58": {
+    "inputs": {
+      "control_net_name": "control_sd15_openpose.pth"
+    },
+    "class_type": "ControlNetLoader"
+  },
+  "59": {
+    "inputs": {
+      "strength": 0.9999987792968741,
+      "conditioning": [
+        "50",
+        0
+      ],
+      "control_net": [
+        "58",
+        0
+      ],
+      "image": [
+        "54",
+        0
+      ]
+    },
+    "class_type": "ControlNetApply"
+  },
+  "60": {
+    "inputs": {
+      "pixels": [
+        "71",
+        0
+      ],
+      "vae": [
+        "49",
+        2
+      ]
+    },
+    "class_type": "VAEEncode"
+  },
+  "71": {
+    "inputs": {
+      "side_length": 1024,
+      "side": "Longest",
+      "upscale_method": "nearest-exact",
+      "crop": "disabled",
+      "image": [
+        "56",
+        0
+      ]
+    },
+    "class_type": "Image scale to side"
+  }
+}
