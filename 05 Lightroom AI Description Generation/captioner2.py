@@ -1,49 +1,30 @@
-#https://huggingface.co/microsoft/kosmos-2-patch14-224
-import requests
-
+#https://huggingface.co/unum-cloud/uform-gen
+from uform.gen_model import VLMForCausalLM, VLMProcessor
 from PIL import Image
-from transformers import AutoProcessor, AutoModelForVision2Seq
+import torch
 
+model = VLMForCausalLM.from_pretrained("unum-cloud/uform-gen")
+processor = VLMProcessor.from_pretrained("unum-cloud/uform-gen")
 
-model = AutoModelForVision2Seq.from_pretrained("microsoft/kosmos-2-patch14-224")
-processor = AutoProcessor.from_pretrained("microsoft/kosmos-2-patch14-224")
+# [cap] Narrate the contents of the image with precision.
+# [cap] Summarize the visual content of the image.
+# [vqa] What is the main subject of the image?
+prompt = "[cap] Narrate the contents of the image with precision."
+image = Image.open('https://huggingface.co/spaces/llava-hf/llava-4bit/resolve/main/examples/baklava.png')
 
-prompt = "<grounding>An image of"
+inputs = processor(texts=[prompt], images=[image], return_tensors="pt")
+with torch.inference_mode():
+     output = model.generate(
+        **inputs,
+        do_sample=False,
+        use_cache=True,
+        max_new_tokens=128,
+        eos_token_id=32001,
+        pad_token_id=processor.tokenizer.pad_token_id
+    )
 
-# url = "https://huggingface.co/microsoft/kosmos-2-patch14-224/resolve/main/snowman.png"
-# url = 'https://huggingface.co/datasets/Narsil/image_dummy/resolve/main/parrots.png'
+prompt_len = inputs["input_ids"].shape[1]
+decoded_text = processor.batch_decode(output[:, prompt_len:])[0]
 
-# image = Image.open(requests.get(url, stream=True).raw)
-
-# The original Kosmos-2 demo saves the image first then reload it. For some images, this will give slightly different image input and change the generation outputs.
-# image.save("new_image.jpg")
-# image = Image.open("new_image.jpg")
-image = Image.open('test/images/DSC_3877.NEF')
-
-inputs = processor(text=prompt, images=image, return_tensors="pt")
-
-generated_ids = model.generate(
-    pixel_values=inputs["pixel_values"],
-    input_ids=inputs["input_ids"],
-    attention_mask=inputs["attention_mask"],
-    image_embeds=None,
-    image_embeds_position_mask=inputs["image_embeds_position_mask"],
-    use_cache=True,
-    max_new_tokens=128,
-)
-generated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
-
-# Specify `cleanup_and_extract=False` in order to see the raw model generation.
-processed_text = processor.post_process_generation(generated_text, cleanup_and_extract=False)
-
-# print(processed_text)
-# `<grounding> An image of<phrase> a snowman</phrase><object><patch_index_0044><patch_index_0863></object> warming himself by<phrase> a fire</phrase><object><patch_index_0005><patch_index_0911></object>.`
-
-# # By default, the generated  text is cleanup and the entities are extracted.
-processed_text, entities = processor.post_process_generation(generated_text)
-
-print(processed_text)
-# # `An image of a snowman warming himself by a fire.`
-#
-# print(entities)
-# # `[('a snowman', (12, 21), [(0.390625, 0.046875, 0.984375, 0.828125)]), ('a fire', (41, 47), [(0.171875, 0.015625, 0.484375, 0.890625)])]`
+print(f'prompt_len = {prompt_len}')
+print(f'decoded_text = {decoded_text}')
