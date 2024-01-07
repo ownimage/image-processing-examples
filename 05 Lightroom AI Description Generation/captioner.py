@@ -1,4 +1,4 @@
-from transformers import pipeline
+from transformers import pipeline, InstructBlipProcessor, InstructBlipForConditionalGeneration
 import torch
 from PIL import Image
 from transformers import AutoProcessor, AutoModelForVision2Seq
@@ -18,7 +18,7 @@ class Captioner:
 
     @staticmethod
     def get_method_count():
-        return 3
+        return 4
 
     @classmethod
     def method0(self, image_path):
@@ -36,6 +36,7 @@ class Captioner:
 
         with open(image_path, "rb") as file:
             image = Image.open(file)
+            image.thumbnail((image.width / 4, image.height / 4))
             return captioner(image)[0]["generated_text"]
 
     @classmethod
@@ -108,6 +109,46 @@ class Captioner:
             prompt_len = inputs["input_ids"].shape[1]
             decoded_text = processor.batch_decode(output[:, prompt_len:])[0]
             return decoded_text.replace('<|im_end|>', '')
+
+    @classmethod
+    def method3(self, image_path):
+        # https://huggingface.co/microsoft/kosmos-2-patch14-224
+        model_name = 'Salesforce/instructblip-vicuna-7b'
+        if image_path is None:
+            return model_name
+
+        if self.__context is None:
+            self.__context = {
+                'model': InstructBlipForConditionalGeneration.from_pretrained(model_name),
+                'processor': InstructBlipProcessor.from_pretrained(model_name)
+            }
+            print(f'torch.cuda.is_available() = {torch.cuda.is_available()}')
+
+        model = self.__context['model']
+        processor = self.__context['processor']
+
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        model.to(device)
+
+        prompt = "Give a detailed description of this image."
+        with open(image_path, "rb") as file:
+            image = Image.open(file)
+            image.thumbnail((image.width/4, image.height/4))
+            inputs = processor(images=image, text=prompt, return_tensors="pt").to(device)
+
+            outputs = model.generate(
+                **inputs,
+                do_sample=True,
+                num_beams=5,
+                max_length=256,
+                min_length=1,
+                # top_p=0.9,
+                repetition_penalty=1.5,
+                length_penalty=1.0,
+                temperature=1,
+            )
+            generated_text = processor.batch_decode(outputs, skip_special_tokens=True)[0].strip()
+            return generated_text
 
     @classmethod
     def get_describe_method(self):
