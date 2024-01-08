@@ -16,22 +16,24 @@ I will then be able to search for the values in the description in Lightroom.
 ## Requirements
 
 1. Needs to work with NEF, DNG, JPG files
-2. For each file in the directory it needs to create a file names <filename>.txt with the AI description of the content of the file.
-3. I then needs to merge the description into the associated XMP file in the Extended Description
+2. For each file in the directory it needs to create a file with the AI description of the content of the file.  
+This would be one file for the whole directory with one line per file with the filename.xmp, and the new comment.
+3. I then needs to merge the description into the associated XMP file in the UserComment.  
+Note that although it suggests that you might be able to have multiple lines, only the first li is used.
 ```
-<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-    <x:xmpmeta>
-        <rdf:Description>
-            <Iptc4xmpCore:ExtDescrAccessibility>
-                <rdf:Alt>
-                    <rdf:li xml:lang="x-default">Hello Ambassador</rdf:li>
-                </rdf:Alt>
-           </Iptc4xmpCore:ExtDescrAccessibility>
-        </rdf:Description>
-    </rdf:RDF>
-</x:xmpmeta>            
+<x:xmpmeta ...>
+ <rdf:RDF ...>
+  <rdf:Description ...>
+   <exif:UserComment>
+    <rdf:Alt>
+     <rdf:li xml:lang="x-repair">Line Oney</rdf:li>
+    </rdf:Alt>
+   </exif:UserComment>
+  </rdf:Description>
+ </rdf:RDF>
+</x:xmpmeta>      
 ```
-Note that the closing for rdf:RDF and x:xmpmeta look wrong
+
 
 ## Non requirements
 
@@ -48,4 +50,16 @@ To create the venv and use it
 pip -m virtualenv venv
 venv\Scripts\activate
 ```
+## Running
 
+```
+python add_description.py
+```
+## Todo
+
+1) in add_description.py unpack the image, this means it can be resized as needed.  
+This means that this image is passed to the methods rather than the path
+2) Allow for multiple methods to be cached, this means that the context needs to be method specific.
+3) Have the method that is passed in be a list of methods
+4) Test that can write into a single file
+5) Test can merge file in 4) into .xml
