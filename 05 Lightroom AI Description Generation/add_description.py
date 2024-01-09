@@ -24,6 +24,8 @@ try:
 except:
     print(USAGE)
     print(USAGE_MODEL_ID)
+    for i in range(METHOD_COUNT):
+        print(f'{i}) - model name')
     exit()
 
 dir_path = sys.argv[2]

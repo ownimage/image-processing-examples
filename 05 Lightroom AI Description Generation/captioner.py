@@ -3,18 +3,16 @@ import torch
 from PIL import Image
 from transformers import AutoProcessor, AutoModelForVision2Seq
 from uform.gen_model import VLMForCausalLM, VLMProcessor
+import logging, sys
 
 
 class Captioner:
-    __model_id = 0
-    __context = None
-    __describe_method = None
+    __context = {}
 
     @classmethod
-    def __init__(self, model_id):
-        self.__model_id = model_id
-        print(f'model = {self.describe(None)}')
-        print(f'torch.cuda.is_available() -> {torch.cuda.is_available()}')
+    def __init__(self, logging_level = logging.DEBUG):
+        logging.basicConfig(stream=sys.stdout, level=logging_level)
+        logging.info(f'torch.cuda.is_available() -> {torch.cuda.is_available()}')
 
     @staticmethod
     def get_method_count():
@@ -24,15 +22,19 @@ class Captioner:
     def method0(self, image_path):
         # https://huggingface.co/tasks/image-to-text
         model_name = 'Salesforce/blip-image-captioning-base'
+        model_context_id = '0'
+
         if image_path is None:
             return model_name
 
-        if self.__context is None:
-            self.__context = {
+        if model_context_id not in self.__context:
+            context = {
                 'captioner': pipeline('image-to-text', model=model_name, max_new_tokens=200)
             }
+            self.__context[model_context_id] = context
 
-        captioner = self.__context['captioner']
+        context = self.__context[model_context_id]
+        captioner = context['captioner']
 
         with open(image_path, "rb") as file:
             image = Image.open(file)
@@ -43,17 +45,21 @@ class Captioner:
     def method1(self, image_path):
         # https://huggingface.co/microsoft/kosmos-2-patch14-224
         model_name = 'microsoft/kosmos-2-patch14-224'
+        model_context_id = '1'
+
         if image_path is None:
             return model_name
 
-        if self.__context is None:
-            self.__context = {
+        if model_context_id not in self.__context:
+            context = {
                 'model': AutoModelForVision2Seq.from_pretrained(model_name),
                 'processor': AutoProcessor.from_pretrained(model_name)
             }
+            self.__context[model_context_id] = context
 
-        model = self.__context['model']
-        processor = self.__context['processor']
+        context = self.__context[model_context_id]
+        model = context['model']
+        processor = context['processor']
         prompt = "<grounding>An image of"
 
         with open(image_path, "rb") as file:
@@ -77,17 +83,21 @@ class Captioner:
     def method2(self, image_path):
         # https://huggingface.co/microsoft/kosmos-2-patch14-224
         model_name = 'unum-cloud/uform-gen'
+        model_context_id = '2'
+
         if image_path is None:
             return model_name
 
-        if self.__context is None:
-            self.__context = {
+        if model_context_id not in self.__context:
+            context = {
                 'model': VLMForCausalLM.from_pretrained(model_name),
                 'processor': VLMProcessor.from_pretrained(model_name)
             }
+            self.__context[model_context_id] = context
 
-        model = self.__context['model']
-        processor = self.__context['processor']
+        context = self.__context[model_context_id]
+        model = context['model']
+        processor = context['processor']
 
         # [cap] Narrate the contents of the image with precision.
         # [cap] Summarize the visual content of the image.
@@ -114,18 +124,21 @@ class Captioner:
     def method3(self, image_path):
         # https://huggingface.co/microsoft/kosmos-2-patch14-224
         model_name = 'Salesforce/instructblip-vicuna-7b'
+        model_context_id = '3'
+
         if image_path is None:
             return model_name
 
-        if self.__context is None:
-            self.__context = {
+        if model_context_id not in self.__context:
+            context = {
                 'model': InstructBlipForConditionalGeneration.from_pretrained(model_name),
                 'processor': InstructBlipProcessor.from_pretrained(model_name)
             }
-            print(f'torch.cuda.is_available() = {torch.cuda.is_available()}')
+            self.__context[model_context_id] = context
 
-        model = self.__context['model']
-        processor = self.__context['processor']
+        context = self.__context[model_context_id]
+        model = context['model']
+        processor = context['processor']
 
         device = "cuda" if torch.cuda.is_available() else "cpu"
         model.to(device)
@@ -151,15 +164,13 @@ class Captioner:
             return generated_text
 
     @classmethod
-    def get_describe_method(self):
-        if self.__describe_method is None:
-            zeros = len(f'{self.get_method_count()}')
-            method_name = f'method{self.__model_id:0{zeros}d}'
-            print(f'describe_method = {method_name}')
-            self.__describe_method = eval(f'self.{method_name}')
+    def get_describe_method(self, model_id):
+        zeros = len(f'{self.get_method_count()}')
+        method_name = f'method{model_id:0{zeros}d}'
+        logging.debug(f'describe_method = {method_name}')
+        return eval(f'self.{method_name}')
 
-        return self.__describe_method
 
     @classmethod
-    def describe(self, image_path):
-        return self.get_describe_method()(image_path)
+    def describe(self, model_id, image_path):
+        return self.get_describe_method(model_id)(image_path)

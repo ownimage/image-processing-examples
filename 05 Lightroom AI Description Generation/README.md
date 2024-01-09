@@ -53,7 +53,13 @@ venv\Scripts\activate
 ## Running
 
 ```
+venv\Scripts\activate
 python add_description.py
+```
+
+## Running tests
+```
+python test_xmp_processor.py -v
 ```
 ## Todo
 
