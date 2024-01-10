@@ -19,12 +19,12 @@ class Captioner:
         return 4
 
     @classmethod
-    def method0(self, image_path):
+    def method0(self, image):
         # https://huggingface.co/tasks/image-to-text
         model_name = 'Salesforce/blip-image-captioning-base'
         model_context_id = '0'
 
-        if image_path is None:
+        if image is None:
             return model_name
 
         if model_context_id not in self.__context:
@@ -36,18 +36,15 @@ class Captioner:
         context = self.__context[model_context_id]
         captioner = context['captioner']
 
-        with open(image_path, "rb") as file:
-            image = Image.open(file)
-            image.thumbnail((image.width / 4, image.height / 4))
-            return captioner(image)[0]["generated_text"]
+        return captioner(image)[0]["generated_text"]
 
     @classmethod
-    def method1(self, image_path):
+    def method1(self, image):
         # https://huggingface.co/microsoft/kosmos-2-patch14-224
         model_name = 'microsoft/kosmos-2-patch14-224'
         model_context_id = '1'
 
-        if image_path is None:
+        if image is None:
             return model_name
 
         if model_context_id not in self.__context:
@@ -61,31 +58,29 @@ class Captioner:
         model = context['model']
         processor = context['processor']
         prompt = "<grounding>An image of"
+        #prompt = "<grounding>Describe this image in detail:"
 
-        with open(image_path, "rb") as file:
-            image = Image.open(file)
-            inputs = processor(text=prompt, images=image, return_tensors="pt")
-
-            generated_ids = model.generate(
-                pixel_values=inputs["pixel_values"],
-                input_ids=inputs["input_ids"],
-                attention_mask=inputs["attention_mask"],
-                image_embeds=None,
-                image_embeds_position_mask=inputs["image_embeds_position_mask"],
-                use_cache=True,
-                max_new_tokens=128,
-            )
-            generated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
-            processed_text, entities = processor.post_process_generation(generated_text)
-            return processed_text
+        inputs = processor(text=prompt, images=image, return_tensors="pt")
+        generated_ids = model.generate(
+            pixel_values=inputs["pixel_values"],
+            input_ids=inputs["input_ids"],
+            attention_mask=inputs["attention_mask"],
+            image_embeds=None,
+            image_embeds_position_mask=inputs["image_embeds_position_mask"],
+            use_cache=True,
+            max_new_tokens=128,
+        )
+        generated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
+        processed_text, entities = processor.post_process_generation(generated_text)
+        return processed_text
 
     @classmethod
-    def method2(self, image_path):
+    def method2(self, image):
         # https://huggingface.co/microsoft/kosmos-2-patch14-224
         model_name = 'unum-cloud/uform-gen'
         model_context_id = '2'
 
-        if image_path is None:
+        if image is None:
             return model_name
 
         if model_context_id not in self.__context:
@@ -99,34 +94,33 @@ class Captioner:
         model = context['model']
         processor = context['processor']
 
-        # [cap] Narrate the contents of the image with precision.
+        # prompt = '[cap] Narrate the contents of the image with precision.'
         # [cap] Summarize the visual content of the image.
         # [vqa] What is the main subject of the image?
         prompt = '[cap] Summarize the visual content of the image.'
-        with open(image_path, "rb") as file:
-            image = Image.open(file)
-            inputs = processor(texts=[prompt], images=[image], return_tensors="pt")
-            with torch.inference_mode():
-                output = model.generate(
-                    **inputs,
-                    do_sample=False,
-                    use_cache=True,
-                    max_new_tokens=128,
-                    eos_token_id=32001,
-                    pad_token_id=processor.tokenizer.pad_token_id
-                )
 
-            prompt_len = inputs["input_ids"].shape[1]
-            decoded_text = processor.batch_decode(output[:, prompt_len:])[0]
-            return decoded_text.replace('<|im_end|>', '')
+        inputs = processor(texts=[prompt], images=[image], return_tensors="pt")
+        with torch.inference_mode():
+            output = model.generate(
+                **inputs,
+                do_sample=False,
+                use_cache=True,
+                max_new_tokens=128,
+                eos_token_id=32001,
+                pad_token_id=processor.tokenizer.pad_token_id
+            )
+
+        prompt_len = inputs["input_ids"].shape[1]
+        decoded_text = processor.batch_decode(output[:, prompt_len:])[0]
+        return decoded_text.replace('<|im_end|>', '')
 
     @classmethod
-    def method3(self, image_path):
+    def method3(self, image):
         # https://huggingface.co/microsoft/kosmos-2-patch14-224
         model_name = 'Salesforce/instructblip-vicuna-7b'
         model_context_id = '3'
 
-        if image_path is None:
+        if image is None:
             return model_name
 
         if model_context_id not in self.__context:
@@ -144,24 +138,21 @@ class Captioner:
         model.to(device)
 
         prompt = "Give a detailed description of this image."
-        with open(image_path, "rb") as file:
-            image = Image.open(file)
-            image.thumbnail((image.width/4, image.height/4))
-            inputs = processor(images=image, text=prompt, return_tensors="pt").to(device)
 
-            outputs = model.generate(
-                **inputs,
-                do_sample=True,
-                num_beams=5,
-                max_length=256,
-                min_length=1,
-                # top_p=0.9,
-                repetition_penalty=1.5,
-                length_penalty=1.0,
-                temperature=1,
-            )
-            generated_text = processor.batch_decode(outputs, skip_special_tokens=True)[0].strip()
-            return generated_text
+        inputs = processor(images=image, text=prompt, return_tensors="pt").to(device)
+        outputs = model.generate(
+            **inputs,
+            do_sample=True,
+            num_beams=5,
+            max_length=256,
+            min_length=1,
+            # top_p=0.9,
+            repetition_penalty=1.5,
+            length_penalty=1.0,
+            temperature=1,
+        )
+        generated_text = processor.batch_decode(outputs, skip_special_tokens=True)[0].strip()
+        return generated_text
 
     @classmethod
     def get_describe_method(self, model_id):
@@ -172,5 +163,5 @@ class Captioner:
 
 
     @classmethod
-    def describe(self, model_id, image_path):
-        return self.get_describe_method(model_id)(image_path)
+    def describe(self, model_id, image):
+        return self.get_describe_method(model_id)(image)
