@@ -10,8 +10,7 @@ class Captioner:
     __context = {}
 
     @classmethod
-    def __init__(self, logging_level = logging.DEBUG):
-        logging.basicConfig(stream=sys.stdout, level=logging_level)
+    def __init__(self):
         logging.info(f'torch.cuda.is_available() -> {torch.cuda.is_available()}')
 
     @staticmethod
