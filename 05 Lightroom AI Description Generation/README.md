@@ -15,10 +15,11 @@ I will then be able to search for the values in the description in Lightroom.
 
 ## Requirements
 
-1. Needs to work with NEF, DNG, JPG files
-2. For each file in the directory it needs to create a file with the AI description of the content of the file.  
+1. DONE Needs to work with NEF, DNG, JPG files
+2. DONE For each file in the directory it needs to create a file with the AI description of the content of the file.  
 This would be one file for the whole directory with one line per file with the filename.xmp, and the new comment.
-3. I then needs to merge the description into the associated XMP file in the UserComment.  
+Note that the xmp files are automatically updated.
+3. DONE I then needs to merge the description into the associated XMP file in the UserComment.  
 Note that although it suggests that you might be able to have multiple lines, only the first li is used.
 ```
 <x:xmpmeta ...>
@@ -33,11 +34,22 @@ Note that although it suggests that you might be able to have multiple lines, on
  </rdf:RDF>
 </x:xmpmeta>      
 ```
-
+4. DONE Should be able to have a description.txt in each folder and add that content to the description if it is present.
+5. CLOSED Should include the folder name in the description (if it is not already included in the search)
+This is not needed as a search any searchable field will include the folder name
+The folder name is alreay in the search
+6. Look at this model https://huggingface.co/llava-hf/llava-1.5-7b-hf
+7. Does reducing the image size mean that the descriptions process quicker?
+8. What stats should be kept (execution, sum of time, sum of time squared, sum of words, sum of words squared ... should this ignore the first run
+9. Should be able to add or replace descriptions, and choose which model to add
+10. Should I put a gradio front end on this
+11. Currently it asks for a model but then adds models 0,1,2 regardless of selection
+12. Should I break out the models into a separate directory and scan it, this seems to be a more scalable solution than methods
 
 ## Non requirements
 
 1. I am not aiming to do person identification at the moment.
+
 
 ## Getting started
 
@@ -58,8 +70,13 @@ python add_description.py
 ```
 
 ## Running tests
+To run the unit tests 
 ```
-python test_xmp_processor.py -v
+python -m uinttest discover
+```
+To run the e2e tests run
+```commandline
+TEST.cmd
 ```
 ## Todo
 

@@ -22,7 +22,7 @@ class SimpleTestCase(unittest.TestCase):
 
     def test_no_comment(self):
         # GIVEN
-        shutil.copy('test/no_comment.xml', test_filename)
+        shutil.copy('sample/no_comment.xml', test_filename)
         assert assert_no_comment_block(test_filename), 'input has comment when it should not'
         # WHEN
         process(test_filename, test_comment)
@@ -31,7 +31,7 @@ class SimpleTestCase(unittest.TestCase):
 
     def test_update_existing_comment(self):
         # GIVEN
-        shutil.copy('test/with_comment.xml', test_filename)
+        shutil.copy('sample/with_comment.xml', test_filename)
         exiting_comment = utility_get_user_comment_text(test_filename)
         assert exiting_comment != test_comment, 'existing_comment can not equal test_comment'
         # WHEN

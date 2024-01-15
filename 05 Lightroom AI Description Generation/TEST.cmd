@@ -1,6 +1,10 @@
 set HF_HUB_DISABLE_SYMLINKS_WARNING=true
-venv\Scripts\deactivate
-venv\Scripts\activate
-del /Q test\test-directory\*.*
-xcopy test\images\*.* test\test-directory\
-python add_description.py test\test-directory
+REM venv\Scripts\deactivate
+REM venv\Scripts\activate
+
+rd /Q /S test
+xcopy sample\images\*.* test\test-directory-no-description\
+xcopy sample\images\*.* test\test-directory-description\
+copy sample\description.txt test\test-directory-description\
+
+python add_description.py 0 test

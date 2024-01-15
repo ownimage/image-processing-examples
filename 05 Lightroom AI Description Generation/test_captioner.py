@@ -1,12 +1,11 @@
 import unittest
-import logging
 from PIL import Image
 
 from captioner import Captioner
 
-test_filename = ('test/parrots.jpg')
+test_filename = ('sample/parrots.jpg')
 expected = [
-    'two birds are sitting on a branch',
+    'this is a picture of two birds',
     'An image of two parrots',
     'Two colorful parrots sit close together on a tree branch, facing the camera and displaying their vibrant colors and unique features.',
     'IGNORE',
@@ -24,7 +23,7 @@ class TestCaptioner(unittest.TestCase):
         # GIVEN
         file = open(test_filename, 'rb')
         test_image = Image.open(file)
-        captioner = Captioner(logging.CRITICAL)
+        captioner = Captioner()
         actual = []
         # WHEN
         for i in range(Captioner.get_method_count()):
