@@ -1,12 +1,14 @@
-import os
-import sys
 import logging
-from PIL import Image
-from os import walk
+import os
 import re
-from xmp_processor import process
+import sys
+from os import walk
+
+from PIL import Image
+import rawpy
 
 from captioner import Captioner
+from xmp_processor import process
 
 METHOD_COUNT = Captioner.get_method_count()
 USAGE = 'python add_description.py <model_id> <directory_path>'
@@ -64,6 +66,14 @@ def get_directory_description(dir_path):
     return description
 
 
+def get_image(image_path, size):
+    raw = rawpy.imread(image_path)
+    rgb = raw.postprocess()
+    img = Image.fromarray(rgb)
+    img.thumbnail((size, size))
+    return img
+
+
 start_dirpath = sys.argv[2]
 print(f'directory_path = {start_dirpath}')
 if not os.path.isdir(start_dirpath):
@@ -75,11 +85,12 @@ w = walk(start_dirpath)
 for (dirpath, dirnames, filenames) in w:
     image_filenames = [f for f in filenames if image_file_with_xmp(f, filenames)]
     dir_description = get_directory_description(dirpath)
-    print(f'dirpath={dirpath} dirnames={dirnames} filenames={filenames} image_filenames={image_filenames} directory_description={dir_description}\n)')
+    print(
+        f'dirpath={dirpath} dirnames={dirnames} filenames={filenames} image_filenames={image_filenames} directory_description={dir_description}\n)')
     for image_filename in image_filenames:
         full_imagefilename = os.path.join(dirpath, image_filename)
-        full_imagefile = open(full_imagefilename, 'rb')
-        image = Image.open(full_imagefile)
+        image = get_image(full_imagefilename, 1024)
+        print(f'image.width = {image.width}, image.height = {image.height}')
         description = dir_description
         description += '\n\n' + captioner.describe(0, image)
         description += '\n\n' + captioner.describe(1, image)
@@ -89,5 +100,4 @@ for (dirpath, dirnames, filenames) in w:
         print(f'{xmp_name} : {description}\n')
         process(xmp_name, description)
         image.close()
-        full_imagefile.close()
 print(f'####################################################\n{captioner.get_stats()}')

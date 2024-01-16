@@ -75,7 +75,7 @@ It is best to put double quotes around directory names that have a space in them
 ## Running tests
 To run the unit tests 
 ```
-python -m uinttest discover
+python -m unittest discover
 ```
 To run the e2e tests run
 ```commandline
