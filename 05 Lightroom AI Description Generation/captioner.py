@@ -1,24 +1,28 @@
-from transformers import pipeline, InstructBlipProcessor, InstructBlipForConditionalGeneration, BlipProcessor, \
-    BlipForConditionalGeneration
+import logging
+from timeit import default_timer as timer
+
 import torch
-from PIL import Image
 from transformers import AutoProcessor, AutoModelForVision2Seq
+from transformers import InstructBlipProcessor, InstructBlipForConditionalGeneration, BlipProcessor, \
+    BlipForConditionalGeneration
 from uform.gen_model import VLMForCausalLM, VLMProcessor
-import logging, sys
+
+from stats import Stats
 
 
 class Captioner:
     __context = {}
+    __stats = Stats()
 
-    @classmethod
     def __init__(self):
+        self.__context = {}
+        self.__stats = Stats()
         logging.info(f'torch.cuda.is_available() -> {torch.cuda.is_available()}')
 
     @staticmethod
     def get_method_count():
         return 4
 
-    @classmethod
     def method0(self, image, prompt=None):
         default_prompt = 'This is a picture of'
         prompt = default_prompt if prompt is None else prompt
@@ -47,7 +51,6 @@ class Captioner:
 
         return processor.decode(out[0], skip_special_tokens=True)
 
-    @classmethod
     def method1(self, image, prompt=None):
         default_prompt = '<grounding>An image of'
         prompt = default_prompt if prompt is None else prompt
@@ -83,7 +86,6 @@ class Captioner:
         processed_text, entities = processor.post_process_generation(generated_text)
         return processed_text
 
-    @classmethod
     def method2(self, image, prompt=None):
         default_prompt = '[cap] Summarize the visual content of the image.'
         prompt = default_prompt if prompt is None else '[cap] ' + prompt
@@ -124,7 +126,6 @@ class Captioner:
         decoded_text = processor.batch_decode(output[:, prompt_len:])[0]
         return decoded_text.replace('<|im_end|>', '')
 
-    @classmethod
     def method3(self, image, prompt=None):
         default_prompt = 'Give a detailed description of this image.'
         prompt = default_prompt if prompt is None else prompt
@@ -164,15 +165,22 @@ class Captioner:
         generated_text = processor.batch_decode(outputs, skip_special_tokens=True)[0].strip()
         return generated_text
 
-    @classmethod
     def get_describe_method(self, model_id):
         zeros = len(f'{self.get_method_count()}')
         method_name = f'method{model_id:0{zeros}d}'
         logging.debug(f'describe_method = {method_name}')
         return eval(f'self.{method_name}')
 
-    @classmethod
+    def get_stats(self):
+        return self.__stats.get()
+
     def describe(self, model_id, image, prompt=None):
-        description =  self.get_describe_method(model_id)(image, prompt)
+        start = timer()
+        description = self.get_describe_method(model_id)(image, prompt)
         logging.debug(description)
+        end = timer()
+        word_count = len(description.split())
+        duration = end - start
+        logging.info(f'duration = {duration}')  # Time in seconds, e.g. 5.38091952400282
+        self.__stats.add(model_id, duration, word_count)
         return description

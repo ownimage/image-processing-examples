@@ -45,6 +45,7 @@ The folder name is alreay in the search
 10. Should I put a gradio front end on this
 11. Currently it asks for a model but then adds models 0,1,2 regardless of selection
 12. Should I break out the models into a separate directory and scan it, this seems to be a more scalable solution than methods
+13. Would be good to include what colours were in the image in the description
 
 ## Non requirements
 
@@ -61,6 +62,7 @@ To create the venv and use it
 ```
 pip -m virtualenv venv
 venv\Scripts\activate
+pip install -r requirements.txt
 ```
 ## Running
 
@@ -68,6 +70,7 @@ venv\Scripts\activate
 venv\Scripts\activate
 python add_description.py
 ```
+It is best to put double quotes around directory names that have a space in them.
 
 ## Running tests
 To run the unit tests 

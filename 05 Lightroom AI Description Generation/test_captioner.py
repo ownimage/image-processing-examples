@@ -38,6 +38,7 @@ class TestCaptioner(unittest.TestCase):
 
         test_image.close()
         file.close()
+        print(captioner.get_stats())
 
 if __name__ == "__main__":
     unittest.main()  # run all tests

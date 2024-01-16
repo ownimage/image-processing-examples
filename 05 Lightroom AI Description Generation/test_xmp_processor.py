@@ -17,8 +17,8 @@ class SimpleTestCase(unittest.TestCase):
 
 
     def tearDown(self):
-        # remove(test_filename)
-        pass
+        remove(test_filename)
+
 
     def test_no_comment(self):
         # GIVEN

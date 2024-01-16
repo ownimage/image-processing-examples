@@ -71,7 +71,7 @@ if not os.path.isdir(start_dirpath):
     print(USAGE_FOLDER_HELP)
     exit()
 
-w = walk("test")
+w = walk(start_dirpath)
 for (dirpath, dirnames, filenames) in w:
     image_filenames = [f for f in filenames if image_file_with_xmp(f, filenames)]
     dir_description = get_directory_description(dirpath)
@@ -90,3 +90,4 @@ for (dirpath, dirnames, filenames) in w:
         process(xmp_name, description)
         image.close()
         full_imagefile.close()
+print(f'####################################################\n{captioner.get_stats()}')
