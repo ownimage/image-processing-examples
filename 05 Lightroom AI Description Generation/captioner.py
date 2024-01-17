@@ -2,7 +2,7 @@ import logging
 from timeit import default_timer as timer
 
 import torch
-from transformers import AutoProcessor, AutoModelForVision2Seq
+from transformers import AutoProcessor, AutoModelForVision2Seq, LlavaForConditionalGeneration
 from transformers import InstructBlipProcessor, InstructBlipForConditionalGeneration, BlipProcessor, \
     BlipForConditionalGeneration
 from uform.gen_model import VLMForCausalLM, VLMProcessor
@@ -21,7 +21,7 @@ class Captioner:
 
     @staticmethod
     def get_method_count():
-        return 4
+        return 5
 
     def method0(self, image, prompt=None):
         default_prompt = 'This is a picture of'
@@ -163,6 +163,40 @@ class Captioner:
             temperature=1,
         )
         generated_text = processor.batch_decode(outputs, skip_special_tokens=True)[0].strip()
+        return generated_text
+
+    def method4(self, image, prompt=None):
+        model_context_id = '4'
+        model_name = 'llava-hf/llava-1.5-7b-hf'
+        default_prompt = 'USER: <image>\nDescribe this image'
+        # https://huggingface.co/llava-hf/llava-1.5-7b-hf
+
+        if image is None:
+            return model_name
+
+        prompt = default_prompt if prompt is None else prompt
+
+        if model_context_id not in self.__context:
+            context = {
+                'model': LlavaForConditionalGeneration.from_pretrained(
+            model_name,
+            torch_dtype=torch.float16,
+            low_cpu_mem_usage=True
+        ).to(0),
+                'processor': AutoProcessor.from_pretrained(model_name)
+            }
+            self.__context[model_context_id] = context
+
+        context = self.__context[model_context_id]
+        model = context['model']
+        processor = context['processor']
+
+        inputs = processor(prompt, image, return_tensors='pt').to(0, torch.float16)
+        output = model.generate(**inputs, max_new_tokens=200, do_sample=False)
+        generated_text = processor.decode(output[0][2:], skip_special_tokens=True)
+        generated_text = generated_text.replace('ER:', '')
+        generated_text = generated_text.replace('\n', '')
+        generated_text = generated_text.strip()
         return generated_text
 
     def get_describe_method(self, model_id):

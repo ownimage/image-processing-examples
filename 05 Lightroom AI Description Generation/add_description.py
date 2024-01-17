@@ -90,14 +90,15 @@ for (dirpath, dirnames, filenames) in w:
     for image_filename in image_filenames:
         full_imagefilename = os.path.join(dirpath, image_filename)
         image = get_image(full_imagefilename, 1024)
-        print(f'image.width = {image.width}, image.height = {image.height}')
+        logging.debug(f'image.width = {image.width}, image.height = {image.height}')
         description = dir_description
         description += '\n\n' + captioner.describe(0, image)
         description += '\n\n' + captioner.describe(1, image)
         description += '\n\n' + captioner.describe(2, image)
+        description += '\n\n' + captioner.describe(4, image)
         description += '\n'
         xmp_name = convert_image_name_to_xmp_name(full_imagefilename)
-        print(f'{xmp_name} : {description}\n')
+        logging.info(f'{xmp_name} : {description}\n')
         process(xmp_name, description)
         image.close()
 print(f'####################################################\n{captioner.get_stats()}')
