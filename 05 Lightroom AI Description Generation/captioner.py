@@ -168,7 +168,7 @@ class Captioner:
     def method4(self, image, prompt=None):
         model_context_id = '4'
         model_name = 'llava-hf/llava-1.5-7b-hf'
-        default_prompt = 'USER: <image>\nDescribe this image'
+        default_prompt = 'USER: <image>\nDescribe this image in more detail'
         # https://huggingface.co/llava-hf/llava-1.5-7b-hf
 
         if image is None:
@@ -179,10 +179,10 @@ class Captioner:
         if model_context_id not in self.__context:
             context = {
                 'model': LlavaForConditionalGeneration.from_pretrained(
-            model_name,
-            torch_dtype=torch.float16,
-            low_cpu_mem_usage=True
-        ).to(0),
+                    model_name,
+                    torch_dtype=torch.float16,
+                    low_cpu_mem_usage=True
+                ).to(0),
                 'processor': AutoProcessor.from_pretrained(model_name)
             }
             self.__context[model_context_id] = context
