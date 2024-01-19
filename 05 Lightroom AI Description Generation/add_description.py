@@ -2,16 +2,12 @@ import datetime
 import logging
 import os
 import pprint
-import re
 import sys
 import time
 from os import walk
 
-import rawpy
-from PIL import Image
-
 from captioner import Captioner
-from xmp_processor import process
+from describe_image import describe_image, image_file_with_xmp, get_directory_description, get_stats
 
 METHOD_COUNT = Captioner.get_method_count()
 USAGE = 'python add_description.py <model_id> <directory_path>'
@@ -25,7 +21,7 @@ captioner = Captioner()
 
 start_time = time.time()
 start_time_string = datetime.datetime.now()
-cutoff = start_time - (3 * 60 * 60 * 24)
+cutoff = start_time #- (3 * 60 * 60 * 24)
 
 
 def print_usage():
@@ -33,19 +29,6 @@ def print_usage():
     print(USAGE_MODEL_ID)
     for i in range(METHOD_COUNT):
         print(f'{i}) - {captioner.describe(i, None)}')
-
-
-def convert_image_name_to_xmp_name(image_name):
-    if not re.match(extns, image_name):
-        return None
-    return re.search(extns, image_name).group(1) + 'xmp'
-
-
-def image_file_with_xmp(filename, filenames):
-    xmp_name = convert_image_name_to_xmp_name(filename)
-    if xmp_name is None:
-        return False
-    return xmp_name in filenames
 
 
 if len(sys.argv) != 3:
@@ -62,30 +45,6 @@ except:
     print_usage()
     exit()
 
-
-def get_directory_description(dir_path):
-    description = ''
-    description_path = os.path.join(dir_path, 'description.txt')
-    if os.path.isfile(description_path):
-        file = open(description_path, 'r')
-        description = file.read()
-        file.close()
-    return description
-
-
-def get_image(image_path, size):
-    raw = rawpy.imread(image_path)
-    rgb = raw.postprocess()
-    img = Image.fromarray(rgb)
-    return img
-
-
-def is_file_older_than(path, cutoff):
-    b = os.path.getmtime(path) < cutoff
-    logging.debug(f'is_file_older_than path: {path} result: {b}')
-    return b
-
-
 start_dirpath = sys.argv[2]
 print(f'directory_path = {start_dirpath}')
 if not os.path.isdir(start_dirpath):
@@ -101,22 +60,8 @@ for (dirpath, dirnames, filenames) in w:
     print(
         f'dirpath={dirpath} dirnames={dirnames} filenames={filenames} image_filenames={image_filenames} directory_description={dir_description}\n)')
     for image_filename in image_filenames:
-        full_imagefilename = os.path.join(dirpath, image_filename)
-        xmp_name = convert_image_name_to_xmp_name(full_imagefilename)
-        if is_file_older_than(xmp_name, cutoff):
-            process(xmp_name, 'ERROR ERRORERROR')
-            image = get_image(full_imagefilename, 1024)
-            logging.debug(f'image.width = {image.width}, image.height = {image.height}')
-            description = dir_description
-            description += '\n\n' + captioner.describe(0, image)
-            description += '\n\n' + captioner.describe(1, image)
-            description += '\n\n' + captioner.describe(2, image)
-            description += '\n\n' + captioner.describe(4, image)
-            description += '\n'
-            logging.info(f'{xmp_name} : {description}\n')
-            process(xmp_name, description)
-            image.close()
+        describe_image(dirpath, image_filename, dir_description, cutoff)
 print('####################################################')
-pprint.pprint(captioner.get_stats())
+pprint.pprint(get_stats())
 print(f'start_time: {start_time_string}')
 print(f'  end_time: {datetime.datetime.now()}')
