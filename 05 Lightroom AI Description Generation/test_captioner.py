@@ -12,8 +12,12 @@ expected = [
     'An image of two parrots',
     'Two colorful parrots sit close together on a tree branch, facing the camera and displaying their vibrant colors and unique features.',
     'IGNORE',
-    'Describe this image in one sentence: Two parrots are standing next to each other.'
+    'Describe this image in more detail.The image features two parrots standing next to each other in a forest. The '
+    'parrots are positioned close to the camera, with one bird on the left side and the other on the right side of '
+    'the image. Both birds have their mouths open, possibly vocalizing or communicating with each other. The forest '
+    'setting provides a natural and serene environment for these beautiful birds.'
 ]
+
 
 class TestCaptioner(unittest.TestCase):
 
@@ -43,6 +47,7 @@ class TestCaptioner(unittest.TestCase):
         test_image.close()
         file.close()
         print(captioner.get_stats())
+
 
 if __name__ == "__main__":
     unittest.main()  # run all tests

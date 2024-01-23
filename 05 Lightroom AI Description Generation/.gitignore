@@ -1,2 +1,8 @@
 catalog
+flagged
+temp
+trash
 test
+/run.properties
+/web_uploader.properties
+/slack_notifier.properties

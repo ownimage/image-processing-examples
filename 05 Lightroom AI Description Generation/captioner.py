@@ -11,8 +11,6 @@ from stats import Stats
 
 
 class Captioner:
-    __context = {}
-    __stats = Stats()
 
     def __init__(self):
         self.__context = {}

@@ -3,19 +3,25 @@ import sys
 
 import gradio as gr
 
-from describe_image import describe_image
+from describe_image import Describe_Image
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+describe_image = Describe_Image()
 
 
-def greet(dirname, filename):
-    print(f'dirname={dirname} filename={filename}')
-    return describe_image(dirname, filename)
+def describe(dirname, filename, size):
+    desc = 'ERROR ERRORERROR'
+    try:
+        print(f'dirname={dirname} filename={filename}')
+        desc = describe_image.describe_image(dirname, filename, size=size)
+    except:
+        pass
+    return desc
 
 
 demo = gr.Interface(
-    fn=greet,
-    inputs=["text", "text"],
+    fn=describe,
+    inputs=["text", "text", "number"],
     outputs=["text"],
 )
 

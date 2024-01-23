@@ -1,0 +1,4 @@
+HOST=hostname
+USERNAME=username
+PASSWORD=password
+BASE_URL=https://host/path_ending_with_slash/
