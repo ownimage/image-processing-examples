@@ -59,6 +59,7 @@ slack_notifier.send_notification('Starting', 'summary')
 w = walk(start_dirpath)
 for (dirpath, dirnames, filenames) in w:
     dirnames.sort()
+    filenames.sort()
     image_filenames = [f for f in filenames if describe_image.image_file_with_xmp(f, filenames)]
     dir_description = describe_image.get_directory_description(dirpath)
     print(

@@ -3,11 +3,9 @@ import os
 import re
 import time
 
-import rawpy
-from PIL import Image
-
-from xmp_processor import process
 from captioner import Captioner
+from xmp_processor import process
+from image_util import get_image
 
 
 class Describe_Image:
@@ -40,14 +38,6 @@ class Describe_Image:
                 file.close()
         return self.__latest_directory_description
 
-    def get_image(self, image_path, size=0): #TODO move to image_util
-        raw = rawpy.imread(image_path)
-        rgb = raw.postprocess()
-        img = Image.fromarray(rgb)
-        if size != 0:
-            img.thumbnail((size, size))
-        return img
-
     def is_file_older_than(self, path, cutoff):
         b = os.path.getmtime(path) < cutoff
         logging.debug(f'is_file_older_than path: {path} result: {b}')
@@ -58,7 +48,7 @@ class Describe_Image:
         xmp_name = self.convert_image_name_to_xmp_name(full_imagefilename)
         if self.is_file_older_than(xmp_name, cutoff):
             process(xmp_name, 'ERROR ERRORERROR')
-            image = self.get_image(full_imagefilename, size)
+            image = get_image(full_imagefilename, size)
             logging.debug(f'image.width = {image.width}, image.height = {image.height}')
             description = dir_description
             description += '\n\n' + self.__captioner.describe(0, image)
