@@ -4,7 +4,7 @@ import shutil
 
 import xml.etree.ElementTree as ET
 
-from xmp_processor import process, get_user_comment, namespace
+from xmp_processor import process, get_user_comment, additional_namespace
 
 test_filename = 'in.xml'
 test_comment = "THIS IS A COMMENT"
@@ -46,10 +46,10 @@ def utility_get_user_comment(filename):
 
 def utility_get_user_comment_text(filename):
     element = utility_get_user_comment(filename)
-    alt = element.find('rdf:Alt', namespace)
+    alt = element.find('rdf:Alt', additional_namespace)
     if alt is None:
         raise Exception('alt not found')
-    li = alt.find('rdf:li', namespace)
+    li = alt.find('rdf:li', additional_namespace)
     if li is None:
         raise Exception('li not found')
     return li.text

@@ -1,8 +1,8 @@
 # https://www.geeksforgeeks.org/reading-and-writing-xml-files-in-python/
-
+import logging
 import xml.etree.ElementTree as ET
 
-namespace = {
+additional_namespace = {
     'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
     'exif':  'http://ns.adobe.com/exif/1.0/'
 }
@@ -24,12 +24,12 @@ def __expect_one_or_none_in_list(single_list, name):
 
 
 def get_user_comment(tree):
-    es = tree.findall('./rdf:RDF/rdf:Description/exif:UserComment', namespace)
+    es = tree.findall('./rdf:RDF/rdf:Description/exif:UserComment', additional_namespace)
     return __expect_one_or_none_in_list(es, 'UserComment')
 
 
 def __get_Description(tree):
-    d = tree.findall('./rdf:RDF/rdf:Description', namespace)
+    d = tree.findall('./rdf:RDF/rdf:Description', additional_namespace)
     return __expect_one_in_list(d, 'Description')
 
 
@@ -48,10 +48,10 @@ def __register_all_namespaces(filename):
 
 
 def __replace_user_comment(element, text):
-    alt = element.find('rdf:Alt', namespace)
+    alt = element.find('rdf:Alt', additional_namespace)
     if alt is None:
         alt = ET.SubElement(element, 'rdf:Alt')
-    li = alt.find('rdf:li', namespace)
+    li = alt.find('rdf:li', additional_namespace)
     if li is None:
         li = ET.SubElement(alt, 'rdf:li', {'xml:lang': 'x-default'})
     li.text = text
@@ -65,4 +65,5 @@ def process(filename, text):
     __replace_user_comment(user_comment, text)
     ET.indent(tree, space=" ", level=0)
     tree.write(filename)
+    print('########################### ' + filename + ' ############################ ')
 
