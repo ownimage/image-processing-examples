@@ -57,13 +57,15 @@ def __replace_user_comment(element, text):
     li.text = text
 
 
-def process(filename, text):
-    __register_all_namespaces(filename)
-    tree = ET.parse(filename)
-    root = tree.getroot()
+def process(filename, text="", tree=None):
+
+    if tree is None:
+        __register_all_namespaces(filename)
+        tree = ET.parse(filename)
+
     user_comment = __get_or_create_user_comment(tree)
     __replace_user_comment(user_comment, text)
     ET.indent(tree, space=" ", level=0)
     tree.write(filename)
-    print('########################### ' + filename + ' ############################ ')
+    return tree
 

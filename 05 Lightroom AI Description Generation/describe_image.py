@@ -47,7 +47,7 @@ class Describe_Image:
         full_imagefilename = os.path.join(dirpath, image_filename)
         xmp_name = self.convert_image_name_to_xmp_name(full_imagefilename)
         if self.is_file_older_than(xmp_name, cutoff):
-            process(xmp_name, 'ERROR ERRORERROR')
+            tree = process(xmp_name, 'ERROR ERRORERROR')
             image = get_image(full_imagefilename, size)
             logging.debug(f'image.width = {image.width}, image.height = {image.height}')
             description = dir_description
@@ -57,7 +57,7 @@ class Describe_Image:
             description += '\n\n' + self.__captioner.describe(4, image)
             description += '\n'
             logging.info(f'{xmp_name} : {description}\n')
-            process(xmp_name, description)
+            process(xmp_name, description, tree)
             image.close()
             return description
 
