@@ -5,17 +5,10 @@ from copy import deepcopy
 
 additional_namespace = {
     'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
-    # 'exif':  'http://ns.adobe.com/exif/1.0/'
-    'Iptc4xmpCore': 'http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/'
-}
-
-additional_namespace_attributes = {
-    # 'xmlns:rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
-    # 'exif':  'http://ns.adobe.com/exif/1.0/'
-    'xmlns:Iptc4xmpCore': 'http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/'
 }
 
 __description_key = '{http://ns.adobe.com/photoshop/1.0/}CaptionWriter'
+
 
 def __expect_one_in_list(single_list, name):
     o = __expect_one_or_none_in_list(single_list, name)
@@ -49,10 +42,12 @@ def replace_user_comment(tree, text):
     d = __get_Description(tree)
     d.attrib[__description_key] = text
 
+
 def __register_all_namespaces(filename):
     namespaces = dict([node for _, node in ET.iterparse(filename, events=['start-ns'])])
     for ns in namespaces:
         ET.register_namespace(ns, namespaces[ns])
+
 
 def process(filename, text=""):
     __register_all_namespaces(filename)
@@ -60,18 +55,9 @@ def process(filename, text=""):
     tree.write(filename)
     tree = ET.parse(filename)
 
-    root = tree.getroot()
-    # root.attrib = merge_attributes(root.attrib, additional_namespace_attributes)
-
     replace_user_comment(tree, text)
     ET.indent(tree, space=" ", level=0)
     tree.write(filename)
     return tree
 
 
-def merge_attributes(x, y):
-    m = deepcopy(x)
-    for k in y.keys():
-        if not k in m.keys():
-            m[k] = y[k]
-    return m

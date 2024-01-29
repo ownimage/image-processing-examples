@@ -5,7 +5,7 @@ import shutil
 import xml.etree.ElementTree as ET
 # from lxml import etree as ET
 
-from xmp_processor import process, get_user_comment, additional_namespace
+from xmp_processor import process, get_user_comment
 
 test_filename = 'in.xml'
 test_comment = "THIS IS A COMMENT"
