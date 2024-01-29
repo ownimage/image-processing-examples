@@ -9,12 +9,13 @@ additional_namespace = {
     'Iptc4xmpCore': 'http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/'
 }
 
-additional_namespace2 = {
+additional_namespace_attributes = {
     # 'xmlns:rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
     # 'exif':  'http://ns.adobe.com/exif/1.0/'
     'xmlns:Iptc4xmpCore': 'http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/'
 }
 
+__description_key = '{http://ns.adobe.com/photoshop/1.0/}CaptionWriter'
 
 def __expect_one_in_list(single_list, name):
     o = __expect_one_or_none_in_list(single_list, name)
@@ -32,8 +33,11 @@ def __expect_one_or_none_in_list(single_list, name):
 
 
 def get_user_comment(tree):
-    es = tree.findall('./rdf:RDF/rdf:Description/Iptc4xmpCore:ExtDescrAccessibility', additional_namespace)
-    return __expect_one_or_none_in_list(es, 'UserComment')
+    uc = None
+    description = __get_Description(tree)
+    if __description_key in description.attrib.keys():
+        uc = description.attrib[__description_key]
+    return uc
 
 
 def __get_Description(tree):
@@ -41,48 +45,31 @@ def __get_Description(tree):
     return __expect_one_in_list(d, 'Description')
 
 
-def __get_or_create_user_comment(tree):
-    user_comment = get_user_comment(tree)
-    if user_comment is None:
-        description = __get_Description(tree)
-        user_comment = ET.SubElement(description, 'Iptc4xmpCore:ExtDescrAccessibility')
-    return user_comment
-
+def replace_user_comment(tree, text):
+    d = __get_Description(tree)
+    d.attrib[__description_key] = text
 
 def __register_all_namespaces(filename):
     namespaces = dict([node for _, node in ET.iterparse(filename, events=['start-ns'])])
     for ns in namespaces:
         ET.register_namespace(ns, namespaces[ns])
 
-
-def __replace_user_comment(element, text):
-    alt = element.find('rdf:Alt', additional_namespace)
-    if alt is None:
-        alt = ET.SubElement(element, 'rdf:Alt')
-    li = alt.find('rdf:li', additional_namespace)
-    if li is None:
-        li = ET.SubElement(alt, 'rdf:li', {'xml:lang': 'x-default'})
-    li.text = text
-
-
 def process(filename, text=""):
-    # __register_all_namespaces(filename)
+    __register_all_namespaces(filename)
     tree = ET.parse(filename)
     tree.write(filename)
     tree = ET.parse(filename)
 
     root = tree.getroot()
-    root.attrib = merge(root.attrib, additional_namespace2)
-    print(root.attrib)
+    # root.attrib = merge_attributes(root.attrib, additional_namespace_attributes)
 
-    user_comment = __get_or_create_user_comment(tree)
-    __replace_user_comment(user_comment, text)
+    replace_user_comment(tree, text)
     ET.indent(tree, space=" ", level=0)
     tree.write(filename)
     return tree
 
 
-def merge(x, y):
+def merge_attributes(x, y):
     m = deepcopy(x)
     for k in y.keys():
         if not k in m.keys():
