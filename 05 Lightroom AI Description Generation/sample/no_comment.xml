@@ -76,11 +76,6 @@
      </crs:Parameters>
     </rdf:Description>
    </crs:Look>
-   <Iptc4xmpCore:ExtDescrAccessibility>
-    <rdf:Alt>
-     <rdf:li xml:lang="x-default">Hello Ambassador</rdf:li>
-    </rdf:Alt>
-   </Iptc4xmpCore:ExtDescrAccessibility>
    <Iptc4xmpCore:Scene>
     <rdf:Bag>
      <rdf:li>Scene</rdf:li>

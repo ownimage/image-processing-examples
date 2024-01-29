@@ -1,10 +1,18 @@
 # https://www.geeksforgeeks.org/reading-and-writing-xml-files-in-python/
 import logging
 import xml.etree.ElementTree as ET
+from copy import deepcopy
 
 additional_namespace = {
     'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
-    'exif':  'http://ns.adobe.com/exif/1.0/'
+    # 'exif':  'http://ns.adobe.com/exif/1.0/'
+    'Iptc4xmpCore': 'http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/'
+}
+
+additional_namespace2 = {
+    # 'xmlns:rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+    # 'exif':  'http://ns.adobe.com/exif/1.0/'
+    'xmlns:Iptc4xmpCore': 'http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/'
 }
 
 
@@ -24,7 +32,7 @@ def __expect_one_or_none_in_list(single_list, name):
 
 
 def get_user_comment(tree):
-    es = tree.findall('./rdf:RDF/rdf:Description/exif:UserComment', additional_namespace)
+    es = tree.findall('./rdf:RDF/rdf:Description/Iptc4xmpCore:ExtDescrAccessibility', additional_namespace)
     return __expect_one_or_none_in_list(es, 'UserComment')
 
 
@@ -37,7 +45,7 @@ def __get_or_create_user_comment(tree):
     user_comment = get_user_comment(tree)
     if user_comment is None:
         description = __get_Description(tree)
-        user_comment = ET.SubElement(description, 'exif:UserComment')
+        user_comment = ET.SubElement(description, 'Iptc4xmpCore:ExtDescrAccessibility')
     return user_comment
 
 
@@ -57,11 +65,15 @@ def __replace_user_comment(element, text):
     li.text = text
 
 
-def process(filename, text="", tree=None):
+def process(filename, text=""):
+    # __register_all_namespaces(filename)
+    tree = ET.parse(filename)
+    tree.write(filename)
+    tree = ET.parse(filename)
 
-    if tree is None:
-        __register_all_namespaces(filename)
-        tree = ET.parse(filename)
+    root = tree.getroot()
+    root.attrib = merge(root.attrib, additional_namespace2)
+    print(root.attrib)
 
     user_comment = __get_or_create_user_comment(tree)
     __replace_user_comment(user_comment, text)
@@ -69,3 +81,10 @@ def process(filename, text="", tree=None):
     tree.write(filename)
     return tree
 
+
+def merge(x, y):
+    m = deepcopy(x)
+    for k in y.keys():
+        if not k in m.keys():
+            m[k] = y[k]
+    return m
