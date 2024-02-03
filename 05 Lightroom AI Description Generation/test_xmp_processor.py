@@ -1,9 +1,7 @@
-import unittest
 import os
 import shutil
-
+import unittest
 import xml.etree.ElementTree as ET
-# from lxml import etree as ET
 
 from xmp_processor import process, get_user_comment
 
@@ -64,7 +62,6 @@ class SimpleTestCase(unittest.TestCase):
         # THEN
         assert utility_get_user_comment(test_filename) == test_comment, 'comment has not been added'
 
-
     def test_exiftool_generated_xmp_with_no_comment(self):
         # GIVEN
         shutil.copy('sample/xmp_from_dng_without_comment.xmp', test_filename)
@@ -73,10 +70,6 @@ class SimpleTestCase(unittest.TestCase):
         process(test_filename, test_comment)
         # THEN
         assert utility_get_user_comment(test_filename) == test_comment, 'comment has not been added'
-
-# tree = ET.parse(test_filename)
-# n = tree.find('./rdf:RDF/rdf:Description', additional_namespace)
-# print(n.attrib)
 
 
 def utility_get_user_comment(filename):
@@ -99,5 +92,3 @@ def remove(filename):
 
 if __name__ == "__main__":
     unittest.main()  # run all tests
-    # SimpleTestCase().test_no_comment()
-
