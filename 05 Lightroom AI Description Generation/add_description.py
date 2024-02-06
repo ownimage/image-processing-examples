@@ -56,22 +56,76 @@ if not os.path.isdir(start_dirpath):
 slack_notifier = SlackNotifier()
 slack_notifier.send_notification('Starting', 'summary')
 
-w = walk(start_dirpath)
-for (dirpath, dirnames, filenames) in w:
-    dirnames.sort()
-    filenames.sort()
-    image_filenames = [f for f in filenames if describe_image.image_file_with_xmp(f, filenames)]
-    dir_description = describe_image.get_directory_description(dirpath)
-    print(
-        f'dirpath={dirpath} dirnames={dirnames} filenames={filenames} image_filenames={image_filenames} directory_description={dir_description}\n)')
-    for image_filename in image_filenames:
-        description = describe_image.describe_image(dirpath, image_filename, dir_description, cutoff)
+def image_file_with_xmp(f, filenames):
+    return describe_image.image_file_with_xmp(f, filenames)
+
+
+class Counter:
+    def __init__(self):
+        self.__count = 0
+
+    def filter(self, f, filenames):
+        return image_file_with_xmp(f, filenames)
+
+    def process(self, dirpath, image_filename):
+        self.__count += 1
+
+    def count(self):
+        return self.__count
+
+
+class Processor:
+    def __init__(self, total):
+        self.__TOTAL_IMAGES = total
+        self.__count = 0
+        self.__total_time = 0
+        self.__previous_time = 0
+
+    def filter(self, f, filenames):
+        return image_file_with_xmp(f, filenames)
+
+    def process(self, dirpath, image_filename):
+        now = time.time()
+        if self.__count != 0:
+            self.__total_time += (now - self.__previous_time)
+        self.__previous_time = now
+        self.__count += 1
+        print(f'image {self.__count} of {self.__TOTAL_IMAGES} {dirpath}\\{image_filename}')
+        description = describe_image.describe_image(dirpath, image_filename)
         if description is not None:
+            remaining = self.estimate_remaining()
             full_image_filename = os.path.join(dirpath, image_filename)
-            message = f'{full_image_filename}    {description}'
+            message = f'{remaining}    {full_image_filename}    {description}'
             slack_notifier.send_notification_with_image(message, dirpath, image_filename, 'feed')
-print('####################################################')
-pprint.pprint(describe_image.get_stats())
-print(f'start_time: {start_time_string}')
-print(f'  end_time: {datetime.datetime.now()}')
-slack_notifier.send_notification(f'Ending: {describe_image.get_stats()}', 'summary')
+
+    def estimate_remaining(self):
+        if self.__count != 0:
+            average_time = self.__total_time/self.__count
+            print(f'average_time = {average_time}')
+            remaining_time = (self.__TOTAL_IMAGES - self.__count) * average_time
+
+            days = remaining_time // (24 * 60 * 60)
+            seconds = remaining_time % (24 * 3600)
+            hour = seconds // 3600
+            seconds %= 3600
+            minutes = seconds // 60
+            seconds %= 60
+
+            print("%d:%d:%02d:%02d" % (days, hour, minutes, seconds))
+            return f'{days} days {hour} hours {minutes} minutes remaining.'
+
+
+def walk_and_do(start_dirpath, processor):
+    w = walk(start_dirpath)
+    for (dirpath, dirnames, filenames) in w:
+        dirnames.sort()
+        filenames.sort()
+        image_filenames = [f for f in filenames if processor.filter(f, filenames)]
+        for image_filename in image_filenames:
+            processor.process(dirpath, image_filename)
+
+
+counter = Counter()
+walk_and_do(start_dirpath, counter)
+processor = Processor(counter.count())
+walk_and_do(start_dirpath, processor)

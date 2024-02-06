@@ -198,6 +198,7 @@ class Captioner:
         generated_text = generated_text.replace('Describe this image in more detail.', '')
         generated_text = generated_text.replace('.', '. ')
         generated_text = generated_text.replace('  ', ' ')
+        generated_text = generated_text.rstrip()
         return generated_text
 
     def get_describe_method(self, model_id):
