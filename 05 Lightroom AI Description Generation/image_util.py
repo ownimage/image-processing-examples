@@ -3,7 +3,9 @@ from PIL import Image
 
 
 def get_image(image_path, size=0):
-    if image_path.upper().endswith('.JPG') or image_path.upper().endswith('.JPEG'):
+    print(f'get_image {image_path}')
+    if (image_path.upper().endswith('.JPG') or image_path.upper().endswith('.JPEG')
+            or image_path.upper().endswith('.TIF') or image_path.upper().endswith('.TIFF')):
         img = __get_image_jpg(image_path)
     else:
         img = __get_image_raw(image_path)
