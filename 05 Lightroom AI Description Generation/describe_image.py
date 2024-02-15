@@ -21,9 +21,25 @@ class Describe_Image:
             return None
         return re.search(self.__extns, image_name).group(1) + 'xmp'
 
-    def image_file_with_xmp(self, filename, filenames, cutoff=time.time()):
+    def image_file_with_xmp_older_than(self, path, filename, filenames, cutoff=time.time()):
+        """
+        Parameters
+        ----------
+        path: str
+            The directory that the filename and filenames are in.
+
+        filename: str
+            The name of a candidate image file.
+
+        filenames: [str]
+            All the filenames in the directory.
+
+        checks that the filename give is a valid image file and it exists
+        and that the associated .xmp file is in the list of filenames
+
+        """
         xmp_name = self.convert_image_name_to_xmp_name(filename)
-        if xmp_name is None or self.is_file_older_than(xmp_name, cutoff):
+        if xmp_name is None or not self.is_file_older_than(os.path.join(path, xmp_name), cutoff):
             return False
         return xmp_name in filenames
 

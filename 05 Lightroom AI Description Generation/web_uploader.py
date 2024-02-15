@@ -1,4 +1,5 @@
 import pysftp
+import urllib.parse
 
 from jproperties import Properties
 
@@ -26,4 +27,4 @@ class WebUploader:
                                password=connection['password'],
                                cnopts=self.cnopts) as sftp:
             sftp.put(local_file, filename)
-        return self.base_url + filename
+        return self.base_url + urllib.parse.quote(filename)

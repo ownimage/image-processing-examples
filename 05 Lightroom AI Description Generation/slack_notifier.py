@@ -38,6 +38,7 @@ class SlackNotifier:
                 slack_url)
         print(curl)
         os.system(curl)
+        print('\n')
 
     def send_notification(self, message, channel=None):
 
@@ -49,6 +50,7 @@ class SlackNotifier:
                 slack_url)
         print(curl)
         os.system(curl)
+        print('\n')
 
     def __get_slack_url(self, channel):
         property_name = 'NOTIFIER_SLACK_URL' if channel is None else 'NOTIFIER_SLACK_URL.' + channel

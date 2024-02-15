@@ -56,16 +56,33 @@ if not os.path.isdir(start_dirpath):
 slack_notifier = SlackNotifier()
 slack_notifier.send_notification('Starting', 'summary')
 
-def image_file_with_xmp(f, filenames):
-    return describe_image.image_file_with_xmp(f, filenames)
+
+def image_file_with_xmp_older_than(path: str, filename: str, filenames: [str]):
+    """
+    Parameters
+    ----------
+    path: str
+        The directory that the filename and filenames are in.
+
+    filename: str
+        The name of a candidate image file.
+
+    filenames: [str]
+        All the filenames in the directory.
+
+    checks that the filename give is a valid image file and it exists
+    and that the associated .xmp file is in the list of filenames
+
+    """
+    return describe_image.image_file_with_xmp_older_than(path, filename, filenames, cutoff)
 
 
 class Counter:
     def __init__(self):
         self.__count = 0
 
-    def filter(self, f, filenames):
-        return image_file_with_xmp(f, filenames)
+    def filter(self, path, filename, filenames):
+        return image_file_with_xmp_older_than(path, filename, filenames)
 
     def process(self, dirpath, image_filename):
         self.__count += 1
@@ -81,8 +98,8 @@ class Processor:
         self.__total_time = 0
         self.__previous_time = 0
 
-    def filter(self, f, filenames):
-        return image_file_with_xmp(f, filenames)
+    def filter(self, path, filename, filenames):
+        return image_file_with_xmp_older_than(path, filename, filenames)
 
     def process(self, dirpath, image_filename):
         now = time.time()
@@ -95,12 +112,12 @@ class Processor:
         if description is not None:
             remaining = self.estimate_remaining()
             full_image_filename = os.path.join(dirpath, image_filename)
-            message = f'{remaining}    {full_image_filename}    {description}'
+            message = f'image {self.__count} of {self.__TOTAL_IMAGES}  {remaining}    {full_image_filename}    {description}'
             slack_notifier.send_notification_with_image(message, dirpath, image_filename, 'feed')
 
     def estimate_remaining(self):
         if self.__count != 0:
-            average_time = self.__total_time/self.__count
+            average_time = self.__total_time / self.__count
             print(f'average_time = {average_time}')
             remaining_time = (self.__TOTAL_IMAGES - self.__count) * average_time
 
@@ -120,9 +137,11 @@ def walk_and_do(start_dirpath, processor):
     for (dirpath, dirnames, filenames) in w:
         dirnames.sort()
         filenames.sort()
-        image_filenames = [f for f in filenames if processor.filter(f, filenames)]
+        image_filenames = [filename for filename in filenames if processor.filter(dirpath, filename, filenames)]
         for image_filename in image_filenames:
             processor.process(dirpath, image_filename)
+            if os.path.exists("stop"):
+                exit()
 
 
 counter = Counter()
