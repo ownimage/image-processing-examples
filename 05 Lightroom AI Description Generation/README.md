@@ -65,10 +65,18 @@ venv\Scripts\activate
 pip install -r requirements.txt
 ```
 ## Running
+Always need to run the following to activate the virtual environment
 
 ```
 venv\Scripts\activate
-python add_description.py
+```
+### Running add desscription to light room xmp
+```
+LR_XMP.cmd path_to_files
+```
+Use double quotes where there is a space in the path, e.g. 
+```
+LR_XMP.cmd "F:\Keith\04. Photos\02 Personal\2012"
 ```
 It is best to put double quotes around directory names that have a space in them.
 
