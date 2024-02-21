@@ -12,7 +12,7 @@ from slack_notifier import SlackNotifier
 from timestamp_properties import get_timestamp
 
 METHOD_COUNT = Captioner.get_method_count()
-USAGE = 'python add_description.py <model_id> <directory_path>'
+USAGE = 'python add_lr_xmp_description.py <model_id> <directory_path>'
 USAGE_MODEL_ID = f'model_id must be an integer >= 0 and < {METHOD_COUNT}.'
 USAGE_FOLDER_HELP = 'the supplied <directory_path> does not exist.'
 
@@ -102,18 +102,21 @@ class Processor:
         return image_file_with_xmp_older_than(path, filename, filenames)
 
     def process(self, dirpath, image_filename):
-        now = time.time()
-        if self.__count != 0:
-            self.__total_time += (now - self.__previous_time)
-        self.__previous_time = now
-        self.__count += 1
-        print(f'image {self.__count} of {self.__TOTAL_IMAGES} {dirpath}\\{image_filename}')
-        description = describe_image.describe_image(dirpath, image_filename)
-        if description is not None:
-            remaining = self.estimate_remaining()
-            full_image_filename = os.path.join(dirpath, image_filename)
-            message = f'image {self.__count} of {self.__TOTAL_IMAGES}  {remaining}    {full_image_filename}    {description}'
-            slack_notifier.send_notification_with_image(message, dirpath, image_filename, 'feed')
+        try:
+            now = time.time()
+            if self.__count != 0:
+                self.__total_time += (now - self.__previous_time)
+            self.__previous_time = now
+            self.__count += 1
+            print(f'image {self.__count} of {self.__TOTAL_IMAGES} {dirpath}\\{image_filename}')
+            description = describe_image.describe_image(dirpath, image_filename)
+            if description is not None:
+                remaining = self.estimate_remaining()
+                full_image_filename = os.path.join(dirpath, image_filename)
+                message = f'image {self.__count} of {self.__TOTAL_IMAGES}  {remaining}    {full_image_filename}    {description}'
+                slack_notifier.send_notification_with_image(message, dirpath, image_filename, 'feed')
+        except:
+            pass
 
     def estimate_remaining(self):
         if self.__count != 0:
