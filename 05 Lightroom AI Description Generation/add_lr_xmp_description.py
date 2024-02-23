@@ -116,7 +116,7 @@ class Processor:
                 message = f'image {self.__count} of {self.__TOTAL_IMAGES}  {remaining}    {full_image_filename}    {description}'
                 slack_notifier.send_notification_with_image(message, dirpath, image_filename, 'feed')
         except:
-            pass
+            print('Exception')
 
     def estimate_remaining(self):
         if self.__count != 0:
