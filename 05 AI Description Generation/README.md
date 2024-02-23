@@ -2,6 +2,8 @@
 
 ## Background
 
+See also [Create Training Descriptions](README_CR_TRD.md) which is also contained in this directory
+
 I have thousands and thousands of photos that I have taken and filed over the years.  
 Almost without exception these do not have any description associated with them.
 This means that unless I know the year they were taken, or I can search on what I called the place when I filed them it is difficult/impossible to find anything.
@@ -56,13 +58,16 @@ The folder name is alreay in the search
 
 You will need python 3.10.6 (any 3.10 will probably work) and virtualenv.
 To install virtual env 
-> pip install virtualenv
+> pip install uv
 
 To create the venv and use it
 ```
-pip -m virtualenv venv
-venv\Scripts\activate
-pip install -r requirements.txt
+path=p:\software\Python3109;p:\software\Python3109\Scripts;%PATH%
+pip install uv
+set VIRTUAL_ENV=venv
+uv venv --python="p:\software\Python3109\python.exe" venv
+uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+uv pip install -r requirements.txt
 ```
 ## Running
 Always need to run the following to activate the virtual environment
@@ -70,7 +75,7 @@ Always need to run the following to activate the virtual environment
 ```
 venv\Scripts\activate
 ```
-### Running add desscription to light room xmp
+### Running add description to light room xmp
 ```
 LR_XMP.cmd path_to_files
 ```
@@ -87,7 +92,7 @@ python -m unittest discover
 ```
 To run the e2e tests run
 ```commandline
-TEST.cmd
+TEST_LR_XMP.cmd
 ```
 ## Todo
 

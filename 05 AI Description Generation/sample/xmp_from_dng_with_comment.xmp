@@ -32,7 +32,8 @@
    crd:LookName=""
    crs:HasSettings="False"
    crs:HasCrop="False"
-   crs:AlreadyApplied="False">
+   crs:AlreadyApplied="False"
+   photoshop:CaptionWriter="from dng">
    <xmpMM:History>
     <rdf:Seq>
      <rdf:li

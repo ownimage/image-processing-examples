@@ -4,7 +4,7 @@ import re
 import time
 
 from captioner import Captioner
-from xmp_processor import process
+from xmp_processor import replace_description_in_file
 from image_util import get_image
 
 
@@ -62,7 +62,7 @@ class Describe_Image:
     def describe_image(self, dirpath, image_filename, dir_description='', size=0):
         full_imagefilename = os.path.join(dirpath, image_filename)
         xmp_name = self.convert_image_name_to_xmp_name(full_imagefilename)
-        process(xmp_name, 'ERROR ERRORERROR')
+        replace_description_in_file(xmp_name, 'ERROR ERRORERROR')
         image = get_image(full_imagefilename, size)
         logging.debug(f'image.width = {image.width}, image.height = {image.height}')
         description = dir_description
@@ -72,7 +72,7 @@ class Describe_Image:
         description += '\n\n' + self.__captioner.describe(4, image)
         description += '\n'
         logging.info(f'{xmp_name} : {description}\n')
-        process(xmp_name, description)
+        replace_description_in_file(xmp_name, description)
         image.close()
         return description
 
