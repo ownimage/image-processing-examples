@@ -1,7 +1,7 @@
 import datetime
 import logging
 import os
-import pprint
+import traceback
 import sys
 import time
 from os import walk
@@ -10,6 +10,7 @@ from captioner import Captioner
 from describe_image import Describe_Image
 from slack_notifier import SlackNotifier
 from timestamp_properties import get_timestamp
+from xmp_processor import get_any_description_from_filename
 
 METHOD_COUNT = Captioner.get_method_count()
 USAGE = 'python add_lr_xmp_description.py <model_id> <directory_path>'
@@ -109,14 +110,27 @@ class Processor:
             self.__previous_time = now
             self.__count += 1
             print(f'image {self.__count} of {self.__TOTAL_IMAGES} {dirpath}\\{image_filename}')
-            description = describe_image.describe_image(dirpath, image_filename)
-            if description is not None:
-                remaining = self.estimate_remaining()
-                full_image_filename = os.path.join(dirpath, image_filename)
-                message = f'image {self.__count} of {self.__TOTAL_IMAGES}  {remaining}    {full_image_filename}    {description}'
-                slack_notifier.send_notification_with_image(message, dirpath, image_filename, 'feed')
-        except:
+
+            xmp_name = describe_image.convert_image_name_to_xmp_name(f'{dirpath}\\{image_filename}')
+            current_description = get_any_description_from_filename(xmp_name)
+
+            if current_description is None or current_description == 'ERROR ERRORERROR':
+                description = describe_image.describe_image(dirpath, image_filename)
+                if description is not None:
+                    remaining = self.estimate_remaining()
+                    full_image_filename = os.path.join(dirpath, image_filename)
+                    message = f'image {self.__count} of {self.__TOTAL_IMAGES}  {remaining}    {full_image_filename}    {description}'
+                    slack_notifier.send_notification_with_image(message, dirpath, image_filename, 'feed')
+
+        except Exception as e:
             print('Exception')
+            print(type(e))  # the exception type
+            print(e.args)  # arguments stored in .args
+            print(e)
+            print(traceback.format_exc())
+            if 'CUDA error' in f'{e.args:}':
+                # cuda errors are generally fatal and need a restart
+                sys.exit(1)
 
     def estimate_remaining(self):
         if self.__count != 0:

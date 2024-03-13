@@ -73,6 +73,7 @@ uv pip install -r requirements.txt
 Always need to run the following to activate the virtual environment
 
 ```
+set VIRTUAL_ENV=venv
 venv\Scripts\activate
 ```
 ### Running add description to light room xmp

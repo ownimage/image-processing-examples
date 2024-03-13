@@ -116,3 +116,7 @@ def upgrade(filename):
     ET.indent(tree, space=" ", level=0)
     tree.write(filename)
     return tree
+
+def get_any_description_from_filename(filename):
+    tree = ET.parse(filename)
+    return get_any_description(tree)
