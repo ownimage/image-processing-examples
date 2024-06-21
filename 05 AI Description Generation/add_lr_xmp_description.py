@@ -130,6 +130,7 @@ class Processor:
             print(traceback.format_exc())
             if 'CUDA error' in f'{e.args:}':
                 # cuda errors are generally fatal and need a restart
+                slack_notifier.send_notification(f'{e}', 'summary')
                 sys.exit(1)
 
     def estimate_remaining(self):
