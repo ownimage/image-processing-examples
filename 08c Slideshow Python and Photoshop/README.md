@@ -27,6 +27,13 @@ Into that I will add a `slideshow` directory where the final set of files will r
 The templates are designed for use with files that fit into 1920x1080 resolution.
 
 # Instructions
+
+## One off setup
+Needs python 3.11
+create virtualenv in venv
+install requirements.txt
+
+## Usage
 1. into the base directory (the one that contains highlight) copy bootstrap.cmd and run it.  This will create the slideshow directory and copy the highlight images into it. 
 2. go to the slideshow directory
 3. copy create_data_txt.cmd and "run.cmd Shortcut.lnk" into it

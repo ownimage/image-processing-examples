@@ -1,5 +1,5 @@
 comtypes==1.4.4
-photoshop-python-api==0.22.4
+photoshop-python-api==0.24.1
 pillow==10.3.0
 pypiwin32==223
 pywin32==306

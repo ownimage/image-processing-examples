@@ -183,6 +183,7 @@ class Captioner:
             context = {
                 'model': LlavaForConditionalGeneration.from_pretrained(
                     model_name,
+                    revision='a272c74',
                     torch_dtype=torch.float16,
                     low_cpu_mem_usage=True
                 ).to(0),

@@ -6,9 +6,11 @@ import operator
 
 def resize(filename):
     HD_Size = (1920, 1080)
+    dpi = (300, 300)
 
     image = Image.open(filename).convert('RGB')
-    if image.size == HD_Size:  # shortcut return
+
+    if image.size == HD_Size and image.info.get('dpi') == dpi:  # shortcut return
         return
 
     image.thumbnail(HD_Size)
@@ -17,7 +19,7 @@ def resize(filename):
     background = Image.new(mode="RGB", size=HD_Size, color=(0, 0, 0))
     background.paste(image, offset)
 
-    background.save(filename, dpi=(300, 300), quality=100)
+    background.save(filename, dpi=dpi, quality=100)
 
 
 def apply_template(template, filename, date, title):
